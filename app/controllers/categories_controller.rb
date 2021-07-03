@@ -1,6 +1,8 @@
 class CategoriesController < ApplicationController
   rescue_from ActiveRecord::RecordNotFound, :with => :not_found
 
+  before_action :check_category_products, only: %i[destroy]
+
   def index
     categories = Category.all
     render json: categories
@@ -20,11 +22,20 @@ class CategoriesController < ApplicationController
     render json: category
   end
 
-  def upadte 
+  def update
+    category = Category.find(params[:id])
+
+    if category.update(category_params)
+      render json: category, status: :ok
+    else
+      render json: { errors: category.errors }, status: :unprocessable_entity
+    end
   end 
 
   def destroy
-    
+    category = Category.find(params[:id])
+    category.destroy
+    render json: 'Category deleted', status: :ok
   end
 
   private
@@ -35,5 +46,14 @@ class CategoriesController < ApplicationController
 
     def not_found
       render json: { error: 'Category not found' }, status: :not_found
+    end
+
+    def check_category_products
+      category = Category.find(params[:id])
+      products = category.products
+
+      if products.count > 0
+        render json: { error: 'Cannot delete category because it has products!' }
+      end
     end
 end 
