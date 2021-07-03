@@ -1,6 +1,6 @@
-class Category < ApplicationRecord
-  has_many :products
-  
+class Product < ApplicationRecord
+  belongs_to :category
+
   validates :name, presence: true
   validates :name, uniqueness: true
 end
